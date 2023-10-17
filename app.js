@@ -2,6 +2,8 @@ const express = require("express"); //import express
 
 const app = express(); //créer une appli express
 
+app.use(express.json()); //intercepte TOUTES les requêtes en JSON, ce contenu est envoyé dans req.body
+
 app.use((req, res, next) => {
   //premier middleware, il sera appliqué à toutes les requêtes envoyées
   res.setHeader("Access-Control-Allow-Origin", "*"); //tout le monde peut avoir accès à l'API
@@ -16,8 +18,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/stuff", (req, res, next) => {
-  //2 arguments : URL & réponse
+app.post("/api/stuff", (req, res, next) => {
+  //intercepte uniquement les requêtes HTTP de type POST
+  console.log(req.body); //sans BDD on affiche juste le corps de la requête
+  res.status(201).json({
+    //code 201 = création, code nécessaire pour que ça ne pllante pas
+    message: "Objet créé !",
+  });
+});
+
+app.get("/api/stuff", (req, res, next) => {
+  //2 arguments : URL & réponse ; n'intercepte que les requêtes GET
   const stuff = [
     //on créer un tableau avec 2 objets
     {

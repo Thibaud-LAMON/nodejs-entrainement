@@ -42,9 +42,26 @@ app.post("/api/stuff", (req, res, next) => {
     .catch((error) => res.status(400).json({ error })); //code 400 d'erreur
 });
 
+app.put("/api/stuff/:id", (req, res, next) => {
+  //intercepte uniquement les requêtes HTTP de type PUT
+  Thing.updateOne(
+    { _id: req.params.id }, //on en modifie un seul : celui dont l'id est égal à celui des paramètres de requête
+    { ...req.body, _id: req.params.id }
+  ) //on le remplace par un nouvel objet dont l'id correspond à celui des paramètres
+    .then(() => res.status(200).json({ message: "Objet modifié !" }))
+    .catch((error) => res.status(400).json({ error }));
+});
+
+app.delete("/api/stuff/:id", (req, res, next) => {
+  //intercepte uniquement les requêtes HTTP de type DELETE
+  Thing.deleteOne({ _id: req.params.id }) //on en supprime un seul : celui dont l'id est égal à celui des paramètres de requête
+    .then(() => res.status(200).json({ message: "Objet supprimé !" }))
+    .catch((error) => res.status(400).json({ error }));
+});
+
 app.get("/api/stuff/:id", (req, res, next) => {
   // :id = segment dynamique, pour récupérer un objet selon son id
-  Thing.findOne({ _id: req.params.id })
+  Thing.findOne({ _id: req.params.id }) //on en récupère un seul
     .then((thing) => res.status(200).json(thing))
     .catch((error) => res.status(404).json({ error })); //erreur 404 item not found
 });

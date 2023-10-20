@@ -1,13 +1,15 @@
 const express = require("express"); //import express
 const mongoose = require("mongoose"); //import mongoose
 
+const Thing = require("./models/Thing");
+
 const app = express(); //créer une appli express
 
 mongoose
   .connect(
     "mongodb+srv://Thalom:QqngXeBBO8gY2CPF@cluster0.ehp2nwf.mongodb.net/?retryWrites=true&w=majority",
     { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  ) //connexion à la BDD
   .then(() => console.log("Connexion à MongoDB réussie !")) //si la connection est réussie
   .catch(() => console.log("Connexion à MongoDB échouée !")); //si la connection a échoué
 
@@ -29,61 +31,29 @@ app.use((req, res, next) => {
 
 app.post("/api/stuff", (req, res, next) => {
   //intercepte uniquement les requêtes HTTP de type POST
-  console.log(req.body); //sans BDD on affiche juste le corps de la requête
-  res.status(201).json({
-    //code 201 = création, code nécessaire pour que ça ne pllante pas
-    message: "Objet créé !",
+  delete req.body._id; //on enlève le champs id avant de copier l'objet
+  const thing = new Thing({
+    //nouvelle instance de Thing
+    ...req.body, //opérateur spread va copier les champs dans le body de la request
   });
+  thing
+    .save() //enregistre l'objet
+    .then(res.status(201).json({ message: "Objet enregistré !" })) //promise : code 201 d'enregistrement réussi
+    .catch((error) => res.status(400).json({ error })); //code 400 d'erreur
+});
+
+app.get("/api/stuff/:id", (req, res, next) => {
+  // :id = segment dynamique, pour récupérer un objet selon son id
+  Thing.findOne({ _id: req.params.id })
+    .then((thing) => res.status(200).json(thing))
+    .catch((error) => res.status(404).json({ error })); //erreur 404 item not found
 });
 
 app.get("/api/stuff", (req, res, next) => {
   //2 arguments : URL & réponse ; n'intercepte que les requêtes GET
-  const stuff = [
-    //on créer un tableau avec 2 objets
-    {
-      _id: "oeihfzeoi", //id
-      title: "Mon premier objet", //titre
-      description: "Les infos de mon premier objet", //description
-      imageUrl:
-        "https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg", //url d'image
-      price: 4900, //prix en centime
-      userId: "qsomihvqios", //clé secondaire : id utilisateur
-    },
-    {
-      _id: "oeihfzeomoihi",
-      title: "Mon deuxième objet",
-      description: "Les infos de mon deuxième objet",
-      imageUrl:
-        "https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg",
-      price: 2900,
-      userId: "qsomihvqios",
-    },
-  ];
-  res.status(200).json(stuff); //on retourne un code 200 et une réponse json : stuff
+  Thing.find() //récupère la liste d'objet
+    .then((things) => res.status(200).json(things))
+    .catch((error) => res.status(400).json({ error }));
 });
 
 module.exports = app; //on l'exporte pour y accéder depuis les autres fichiers dont le serveur node
-
-/* 
-
-app.use((req, res, next) => {
-  console.log("Requête reçue !");
-  next(); //necéssaire pour passer au middleware suivant
-});
-
-app.use((req, res, next) => {
-  res.status(201);
-  next(); //necéssaire pour passer au middleware suivant
-});
-
-app.use((req, res, next) => {
-  //3 arguments : requête, réponse & suivant
-  res.json({ message: "Votre requête est reçue !" }); //méthode json, renvoie une réponse en json (JS Object Notation)
-  next(); //necéssaire pour passer au middleware suivant
-});
-
-app.use((req, res, next) => {
-  console.log("Réponse envoyée avec succès !");
-});
-
-*/

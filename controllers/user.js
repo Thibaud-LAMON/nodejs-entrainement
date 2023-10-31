@@ -19,4 +19,37 @@ exports.signup = (req, res, next) => {
     .catch((error) => res.status(500).json({ error })); //erreur 500, erreur serveur
 };
 
-exports.login = (req, res, next) => {};
+exports.login = (req, res, next) => {
+  User.findOne({ email: req.body.email }) //on cherche l'user selon l'email
+    .then((user) => {
+      //si ça marche on vérifie si l'user à été trouvé
+      if (user === null) {
+        //si la valeur est nulle
+        res
+          .status(401)
+          .json({ message: "Paire identifiant/mot de passe incorrecte" }); //on ne dit pas quel paramètre est érroné pour ne pas créer de faille de sécurité
+      } else {
+        //si la valeur n'est pas nulle
+        bcrypt
+          .compare(req.body.password, user.password) //on compare le mdp de la requète avec celui de la BDD
+          .then((valid) => {
+            //on vérifie sa validité
+            if (!valid) {
+              //s'il est invalide
+              res
+                .status(401)
+                .json({ message: "Paire identifiant/mot de passe incorrecte" });
+            } else {
+              //s'il est valide
+              res.status(200).json({
+                //on renvoi un objet avec les infos necéssaires à l'auth des requêtes émises par le client
+                userId: user._id, //userId
+                token: "TOKEN", //TOKEN
+              });
+            }
+          })
+          .catch((error) => res.status(500).json({ error }));
+      }
+    })
+    .catch((error) => res.status(500).json({ error }));
+};

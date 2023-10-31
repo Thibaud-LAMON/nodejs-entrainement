@@ -1,7 +1,8 @@
 const express = require("express"); //import express
+const bodyParser = require("body-parser"); //import body-parser
 const mongoose = require("mongoose"); //import mongoose
 
-const Thing = require("./models/Thing");
+const stuffRoutes = require("./routes/stuff.js");
 
 const app = express(); //créer une appli express
 
@@ -29,48 +30,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/stuff", (req, res, next) => {
-  //intercepte uniquement les requêtes HTTP de type POST
-  delete req.body._id; //on enlève le champs id avant de copier l'objet
-  const thing = new Thing({
-    //nouvelle instance de Thing
-    ...req.body, //opérateur spread va copier les champs dans le body de la request
-  });
-  thing
-    .save() //enregistre l'objet
-    .then(res.status(201).json({ message: "Objet enregistré !" })) //promise : code 201 d'enregistrement réussi
-    .catch((error) => res.status(400).json({ error })); //code 400 d'erreur
-});
+app.use(bodyParser.json()); //issue de la formation, j'ignore ce que cela fait
 
-app.put("/api/stuff/:id", (req, res, next) => {
-  //intercepte uniquement les requêtes HTTP de type PUT
-  Thing.updateOne(
-    { _id: req.params.id }, //on en modifie un seul : celui dont l'id est égal à celui des paramètres de requête
-    { ...req.body, _id: req.params.id }
-  ) //on le remplace par un nouvel objet dont l'id correspond à celui des paramètres
-    .then(() => res.status(200).json({ message: "Objet modifié !" }))
-    .catch((error) => res.status(400).json({ error }));
-});
-
-app.delete("/api/stuff/:id", (req, res, next) => {
-  //intercepte uniquement les requêtes HTTP de type DELETE
-  Thing.deleteOne({ _id: req.params.id }) //on en supprime un seul : celui dont l'id est égal à celui des paramètres de requête
-    .then(() => res.status(200).json({ message: "Objet supprimé !" }))
-    .catch((error) => res.status(400).json({ error }));
-});
-
-app.get("/api/stuff/:id", (req, res, next) => {
-  // :id = segment dynamique, pour récupérer un objet selon son id
-  Thing.findOne({ _id: req.params.id }) //on en récupère un seul
-    .then((thing) => res.status(200).json(thing))
-    .catch((error) => res.status(404).json({ error })); //erreur 404 item not found
-});
-
-app.get("/api/stuff", (req, res, next) => {
-  //2 arguments : URL & réponse ; n'intercepte que les requêtes GET
-  Thing.find() //récupère la liste d'objet
-    .then((things) => res.status(200).json(things))
-    .catch((error) => res.status(400).json({ error }));
-});
+app.use("/api/stuff", stuffRoutes);
 
 module.exports = app; //on l'exporte pour y accéder depuis les autres fichiers dont le serveur node

@@ -3,6 +3,7 @@ const bodyParser = require("body-parser"); //import body-parser
 const mongoose = require("mongoose"); //import mongoose
 
 const stuffRoutes = require("./routes/stuff.js");
+const userRoutes = require("./routes/user.js");
 
 const app = express(); //créer une appli express
 
@@ -33,5 +34,6 @@ app.use((req, res, next) => {
 app.use(bodyParser.json()); //issue de la formation, j'ignore ce que cela fait
 
 app.use("/api/stuff", stuffRoutes);
+app.use("/api/auth", userRoutes);
 
 module.exports = app; //on l'exporte pour y accéder depuis les autres fichiers dont le serveur node

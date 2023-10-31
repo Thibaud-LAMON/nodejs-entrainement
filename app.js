@@ -31,7 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(bodyParser.json()); //issue de la formation, j'ignore ce que cela fait
+app.use(bodyParser.json()); //permet de rendre exploitable les données du corps de la réquête
 
 app.use("/api/stuff", stuffRoutes);
 app.use("/api/auth", userRoutes);

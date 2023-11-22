@@ -1,6 +1,7 @@
 const express = require("express"); //import express
 const bodyParser = require("body-parser"); //import body-parser
 const mongoose = require("mongoose"); //import mongoose
+const path = require("path"); //imm
 
 const stuffRoutes = require("./routes/stuff.js");
 const userRoutes = require("./routes/user.js");
@@ -35,5 +36,7 @@ app.use(bodyParser.json()); //permet de rendre exploitable les données du corps
 
 app.use("/api/stuff", stuffRoutes);
 app.use("/api/auth", userRoutes);
+app.use("/images", express.static(path.join(__dirname, "images"))); //sert des fichiers statiques
+//on créer une route /images avec le middleware static() d'express, on récupère le répertoire où s'exécute le serveur et on y concatène le le répertoire "images"
 
 module.exports = app; //on l'exporte pour y accéder depuis les autres fichiers dont le serveur node

@@ -23,9 +23,12 @@ const storage = multer.diskStorage({
     //split(" ") sépare la string du nom en un tableau, les espaces détermines les fins des éléments du tableau
     //join(" ") réunni les éléments du tableau en une string, deux élément sont liés par un "_"
     const name = file.originalname.split(" ").join("_");
+    console.log("reussite");
     const extension = MIME_TYPES[file.mimetype]; //extension = MIME_TYPE du fichier envoyé par le frontend
+    console.log("reussite 2");
     callback(null, name + Date.now() + "." + extension); //genère le nom complet : nom + date à la ms prêt + . + extension
+    console.log("reussite 3");
   },
 });
 
-module.exports = multer({ storage }).single("image"); //single('image') : fichier image unique
+module.exports = multer({ storage: storage }).single("image"); //single('image') : fichier image unique

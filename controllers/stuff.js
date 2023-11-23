@@ -83,7 +83,7 @@ exports.deleteThing = (req, res, next) => {
         });
       }
     })
-    .catch((error) => res.status(500).json({ error })); //erreur 500 item not found
+    .catch((error) => res.status(500).json({ error })); //erreur 500
 };
 
 //fonction pour récupérer un objet

@@ -1,4 +1,9 @@
 const Thing = require("../models/Thing"); // on importe le model Thing
+const fs = require("fs");
+/* 
+permet de travailler sur les fichiers et dossiers pour exécuter
+différentes tâches (stocker, lire, renommer, ...)
+*/
 
 //fonction pour créer un objet
 exports.createThing = (req, res, next) => {
@@ -62,9 +67,23 @@ exports.modifyThing = (req, res, next) => {
 
 //fonction pour supprimer un objet
 exports.deleteThing = (req, res, next) => {
-  Thing.deleteOne({ _id: req.params.id }) //on en supprime un seul : celui dont l'id est égal à celui des paramètres de requête
-    .then(() => res.status(200).json({ message: "Objet supprimé !" }))
-    .catch((error) => res.status(400).json({ error }));
+  Thing.findOne({ _id: req.params.id }) //on en récupère un seul
+    .then((thing) => {
+      //si ce n'est pas l'utilisateur qui a posté l'objet
+      if (thing.userId != req.auth.userId) {
+        res.status(401).json({ message: "Accès non autorisé" }); //erreur 401
+      } else {
+        //si c'est l'utilisateur qui a posté l'objet
+        const filename = thing.imageUrl.split("/images/")[1]; //récupère le nom du fichier grâce à .split()
+        fs.unlink(`images/${filename}`, () => {
+          //retrait du fichier puis callback (deuxième argument)
+          Thing.deleteOne({ _id: req.params.id }) //on en supprime un seul : celui dont l'id est égal à celui des paramètres de requête
+            .then(() => res.status(200).json({ message: "Objet supprimé !" }))
+            .catch((error) => res.status(400).json({ error }));
+        });
+      }
+    })
+    .catch((error) => res.status(500).json({ error })); //erreur 500 item not found
 };
 
 //fonction pour récupérer un objet
